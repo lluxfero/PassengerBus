@@ -31,7 +31,7 @@ namespace PassengerBus
         };
         private IConnection connection;
         private IModel channel;
-        const string queueName = "testQueue";
+        const string queueName = "RegistrationToBus";
 
         bool isConnected;
         object lockerIsConnected = new();
