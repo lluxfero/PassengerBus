@@ -14,8 +14,8 @@ namespace PassengerBus
     public class RestServer
     {
         // базовый адрес сервера
-        //const string serverAddress = "http://46.174.48.185:9002/";
-        const string serverAddress = "http://localhost:9002/";
+        //const string serverAddress = "http://localhost:9002/";
+        const string serverAddress = "http://46.174.48.185:9002/";
         
         RabbitMqManager rabbitMqManager;
         Logger logger;
@@ -257,9 +257,13 @@ namespace PassengerBus
             }
 
             // контент ответа борта: с пассажирами или пустой
-            string content = await boardResponse.Content.ReadAsStringAsync();
-            if (content == null || content == "") bus.PassengersUids?.Clear();
-            else bus.PassengersUids = JsonSerializer.Deserialize<List<string>>(content);
+            string jsonContent = await boardResponse.Content.ReadAsStringAsync();
+            if (!ifGettingPassengers) bus.PassengersUids?.Clear();
+            else if (jsonContent != null && jsonContent != "")
+            {
+                bus.PassengersUids = JsonSerializer.Deserialize<List<string>>(jsonContent) ?? [];
+                logger.LogPassengers(false, DateTime.Now.ToString("HH:mm:ss.fff"), bus.voyageUid, bus.PassengersUids);
+            }
 
             // ответ на запрос do_action
             response.StatusCode = 200;
@@ -286,8 +290,8 @@ namespace PassengerBus
                     voyageResponse = await client.GetIfTherePassengersAsync(bus);
                     statusCode = (int)voyageResponse.StatusCode;
                 }
-                content = await voyageResponse.Content.ReadAsStringAsync();
-                bus.voyageUid = JsonDocument.Parse(content).RootElement.GetProperty("uid").ToString();
+                jsonContent = await voyageResponse.Content.ReadAsStringAsync();
+                bus.voyageUid = JsonDocument.Parse(jsonContent).RootElement.GetProperty("uid").ToString();
 
                 if (bus.PassengersUids != null) rabbitMqManager.PutPassengersToAirport(bus.voyageUid, bus.PassengersUids);
                 bus.PassengersUids?.Clear();

@@ -155,43 +155,43 @@ namespace PassengerBus
             switch (GetBusState)
             {
                 case BusState.GoingToAirportForPassengers:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": еду к аэропорту за пассажирами");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": еду к аэропорту за пассажирами");
                     break;
                 case BusState.GoingToParkingForPassengers:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": еду к борту за пассажирами");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": еду к борту за пассажирами");
                     break;
                 case BusState.GoingToParkingToDropPassengers:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": еду к борту высадить пассажиров");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": еду к борту высадить пассажиров");
                     break;
                 case BusState.GoingToAirportToDropPassengers:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": еду к аэропорту высадить пассажиров");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": еду к аэропорту высадить пассажиров");
                     break;
                 case BusState.GoingToGarageFromParking:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": еду в гараж от борта");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": еду в гараж от борта");
                     break;
                 case BusState.GoingToGarageFromAirport:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": еду в гараж от аэропорта");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": еду в гараж от аэропорта");
                     break;
                 case BusState.GettingPassengersFromAirport:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": забираю пассажиров у аэропорта");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": забираю пассажиров у аэропорта");
                     break;
                 case BusState.GettingPassengersFromBoard:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": забираю пассажиров у борта");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": забираю пассажиров у борта");
                     break;
                 case BusState.WaitingForDropSignalFromBoard:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": жду сигнал высадить пассажиров на борт");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": жду сигнал высадить пассажиров на борт");
                     break;
                 case BusState.WaitingForGetSignalFromBoard:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": жду сигнал забрать пассажиров у борта");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": жду сигнал забрать пассажиров у борта");
                     break;
                 case BusState.DroppingPassengersToBoard:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": высаживаю пассажиров на борт");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": высаживаю пассажиров на борт");
                     break;
                 case BusState.DroppingPassengersToAirport:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": высаживаю пассажиров в аэропорт");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": высаживаю пассажиров в аэропорт");
                     break;
                 case BusState.StopPosition:
-                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | " + busUid + ": приехал в гараж, закончил работу");
+                    logger.Log(DateTime.Now.ToString("HH:mm:ss.fff") + " | bus #" + busUid + ": приехал в гараж, закончил работу");
                     break;
             }
         }

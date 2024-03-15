@@ -58,12 +58,12 @@ namespace PassengerBus
                     }
 
                     connection = factory.CreateConnection();
-                    logger.Log("\n [x] connected to RabbitMQ host");
+                    logger.Log($"\n [x] {DateTime.Now:HH:mm:ss.fff} | connected to RabbitMQ host");
 
                     channel = connection.CreateModel();
                     channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
-                    logger.Log(" [x] waiting for messages\n");
+                    logger.Log($" [x] {DateTime.Now:HH:mm:ss.fff} | waiting for messages from RabbitMQ\n");
 
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (model, ea) =>
@@ -75,10 +75,13 @@ namespace PassengerBus
 
                             string passengerUid = JsonDocument.Parse(message).RootElement.GetProperty("Passenger").ToString();
                             string voyageUid = JsonDocument.Parse(message).RootElement.GetProperty("Voyage").ToString();
-                            AddUidToDictionary(voyageUid, passengerUid);
+                            if (voyageUid != null && voyageUid != "")
+                            {
+                                AddUidToDictionary(voyageUid, passengerUid);
 
-                            logger.Log($" [x] received from queue: voyage uid - {voyageUid}, passenger uid - {passengerUid}");
-                            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                                logger.Log($" [x] {DateTime.Now:HH:mm:ss.fff} | received from queue: voyage uid - {voyageUid}, passenger uid - {passengerUid}");
+                                channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                            }
                         });
                     };
 
@@ -117,7 +120,10 @@ namespace PassengerBus
                 {
                     list = voyageListDictionary[Voyage].ToList();
                     voyageListDictionary.Remove(Voyage);
-                    logger.Log($" [x] get passengers from airport: voyage uid - {Voyage}");
+
+                    string time = DateTime.Now.ToString("HH:mm:ss.fff");
+                    logger.Log($" [x] {time} | get passengers from airport: voyage uid - {Voyage}");
+                    logger.LogPassengers(true, time, Voyage, list);
                 }
             }
             return list;
@@ -125,7 +131,9 @@ namespace PassengerBus
 
         public void PutPassengersToAirport(string Voyage, List<string> passengersUids)
         {
-            logger.Log($" [x] sent passenger to airport: voyage uid - {Voyage}");
+            string time = DateTime.Now.ToString("HH:mm:ss.fff");
+            logger.Log($" [x] {time} | put passengers to airport: voyage uid - {Voyage}");
+            logger.LogPassengers(false, time, Voyage, passengersUids);
         }
 
         public void PutUidToQueue(string Voyage, string Passenger)
@@ -135,7 +143,7 @@ namespace PassengerBus
                 string json = JsonSerializer.Serialize(new { Voyage, Passenger });
                 var body = Encoding.UTF8.GetBytes(json);
                 channel.BasicPublish(exchange: "", routingKey: queueName, basicProperties: null, body: body);
-                logger.Log($" [x] sent to queue: voyage uid - {Voyage}, passenger uid - {Passenger}");
+                logger.Log($" [x] {DateTime.Now:HH:mm:ss.fff} | sent to queue: voyage uid - {Voyage}, passenger uid - {Passenger}");
             }
             catch (Exception ex)
             {

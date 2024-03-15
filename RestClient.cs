@@ -11,12 +11,9 @@ namespace PassengerBus
     // Класс, который реализует клиентскую часть REST API
     public class RestClient
     {
-        //private readonly string UNOAddress = "http://46.174.48.185:9004/";      // УНО
-        //private readonly string ControlAddress = "http://46.174.48.185:9007/";  // диспетчер
-        //private readonly string BoardAddress = "http://46.174.48.185:9008/";    // борт
-        private readonly string UNOAddress = "http://localhost:9004/";      // УНО
-        private readonly string ControlAddress = "http://localhost:9007/";  // диспетчер
-        private readonly string BoardAddress = "http://localhost:9008/";    // борт
+        readonly string UNOAddress = "http://46.174.48.185:9004/";      // УНО
+        readonly string ControlAddress = "http://46.174.48.185:9007/";  // диспетчер
+        readonly string BoardAddress = "http://46.174.48.185:9008/";    // борт
 
         Logger logger;
 
@@ -79,7 +76,8 @@ namespace PassengerBus
                 try { response = await client.PostAsync($"/v1/{bus.boardUid}/passengers", jsonContent); }
                 catch (Exception) { }
 
-                logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | POST /v1/{bus.boardUid}/passengers | {response.StatusCode}\n{json}");
+                string time = DateTime.Now.ToString("HH:mm:ss.fff");
+                logger.Log($"{time} | bus #{bus.busUid} | to board | POST /v1/{bus.boardUid}/passengers | {response.StatusCode}\n{json}");
                 return response;
             }
         }
