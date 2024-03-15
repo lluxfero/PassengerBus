@@ -47,7 +47,7 @@ namespace PassengerBus
             catch (Exception ex)
             {
                 Console.WriteLine("\nERROR: " + ex.Message + "\n" + ex.ToString());
-                Console.WriteLine("PRESS ENTER TO EXIT\n");
+                Console.WriteLine("PRESS ENTER TO RETRY\n");
                 Console.ReadLine();
             }
 
@@ -80,6 +80,8 @@ namespace PassengerBus
                 catch (Exception ex)
                 {
                     Console.WriteLine("\nERROR: " + ex.Message + "\n" + ex.ToString());
+                    Console.WriteLine("PRESS ENTER TO RETRY\n");
+                    Console.ReadLine();
                 }
             }
             
