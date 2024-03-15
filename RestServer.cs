@@ -89,10 +89,19 @@ namespace PassengerBus
 
         public void RespondToGetMethod(HttpListenerRequest request, HttpListenerResponse response)
         {
-            if (request.Url == null) return;
+            if (request.Url == null) {
+                response.StatusCode = 400;
+                response.Close(); // закрываем ответ
+                return;
+            }
             string[] segments = request.Url.Segments;
-            if (segments.Length < 3) return; // [0] = "/", [1] = "v1/", ...
-            if (segments[1] != "v1/") return;
+
+            if (segments.Length >= 3 && segments[1] == "v1/") { } // [0] = "/", [1] = "v1/", ...
+            else {
+                response.StatusCode = 400;
+                response.Close(); // закрываем ответ
+                return;
+            }
 
             switch (segments[2])
             {
@@ -113,8 +122,12 @@ namespace PassengerBus
         }
         public async Task GetGoParking(HttpListenerResponse response, string[] segments)
         {
-            if (segments.Length < 4) return;
-            if (segments[3] == null) return; // uid борта
+            if (segments.Length >= 4 && segments[3] != null) { } // uid борта
+            else {
+                response.StatusCode = 400;
+                response.Close(); // закрываем ответ
+                return;
+            }
 
             // выделяем новый автобус
             PassengerBus newBus = new(logger);
@@ -123,11 +136,9 @@ namespace PassengerBus
             {
                 bool busesContainsVoyage = false;
                 foreach (var b in buses)
-                {
                     if (b.Value.boardUid == segments[3]) busesContainsVoyage = true;
-                }
-                if (buses.ContainsKey(busUid) || busesContainsVoyage)
-                {
+
+                if (buses.ContainsKey(busUid) || busesContainsVoyage) {
                     response.StatusCode = 400;
                     response.Close(); // закрываем ответ
                     return;
@@ -163,7 +174,11 @@ namespace PassengerBus
             if (content != null && content != "") passengersUids = JsonSerializer.Deserialize<List<string>>(content);
             lock (lockerDictionary)
             {
-                if (!buses.TryGetValue(busUid, out PassengerBus? value)) return;
+                if (!buses.TryGetValue(busUid, out PassengerBus? value)) {
+                    response.StatusCode = 400;
+                    response.Close(); // закрываем ответ
+                    return;
+                }
                 bus = value;
             }
             if (passengersUids == null || passengersUids.Count == 0) bus.ChangeState(BusState.GoingToAirportForPassengers);
@@ -210,10 +225,19 @@ namespace PassengerBus
 
         public void RespondToPostMethod(HttpListenerRequest request, HttpListenerResponse response)
         {
-            if (request.Url == null) return;
+            if (request.Url == null) {
+                response.StatusCode = 400;
+                response.Close(); // закрываем ответ
+                return;
+            }
             string[] segments = request.Url.Segments;
-            if (segments.Length < 3) return;
-            if (segments[1] != "v1/") return;
+
+            if (segments.Length >= 3 && segments[1] == "v1/") { }
+            else {
+                response.StatusCode = 400;
+                response.Close(); // закрываем ответ
+                return;
+            }
 
             switch (segments[2])
             {
@@ -234,8 +258,12 @@ namespace PassengerBus
         }
         public async Task DoAction(HttpListenerResponse response, string[] segments)
         {
-            if (segments.Length < 4) return;
-            if (segments[3] == null) return; // uid машинки
+            if (segments.Length >= 4 && segments[3] != null) { } // uid машинки
+            else {
+                response.StatusCode = 400;
+                response.Close(); // закрываем ответ
+                return;
+            }
 
             // проверяем, есть ли машинка с таким uid
             PassengerBus bus;
@@ -306,7 +334,11 @@ namespace PassengerBus
             bus.ChangeState(BusState.StopPosition);
             lock (lockerDictionary)
             {
-                if (!buses.ContainsKey(bus.busUid)) return;
+                if (!buses.ContainsKey(bus.busUid)) {
+                    response.StatusCode = 400;
+                    response.Close(); // закрываем ответ
+                    return;
+                }
                 buses.Remove(bus.busUid);
             }
         }
