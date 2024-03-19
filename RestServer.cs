@@ -329,17 +329,17 @@ namespace PassengerBus
                 bus.ChangeState(BusState.DroppingPassengersToAirport);
 
                 // запрос к самолету по uid: какой номер рейса?
-                HttpResponseMessage voyageResponse = await client.GetVoyageUidAsync(bus);
-                statusCode = (int)voyageResponse.StatusCode;
-                while (statusCode != 200)
-                {
-                    voyageResponse = await client.GetVoyageUidAsync(bus);
-                    statusCode = (int)voyageResponse.StatusCode;
-                }
-                jsonContent = await voyageResponse.Content.ReadAsStringAsync();
-                bus.voyageUid = JsonDocument.Parse(jsonContent).RootElement.GetProperty("uid").ToString();
+                //HttpResponseMessage voyageResponse = await client.GetVoyageUidAsync(bus);
+                //statusCode = (int)voyageResponse.StatusCode;
+                //while (statusCode != 200)
+                //{
+                //    voyageResponse = await client.GetVoyageUidAsync(bus);
+                //    statusCode = (int)voyageResponse.StatusCode;
+                //}
+                //jsonContent = await voyageResponse.Content.ReadAsStringAsync();
+                //bus.voyageUid = JsonDocument.Parse(jsonContent).RootElement.GetProperty("uid").ToString();
 
-                if (bus.PassengersUids != null) rabbitMqManager.PutPassengersToAirport(bus.voyageUid, bus.PassengersUids);
+                if (bus.PassengersUids != null) rabbitMqManager.PutPassengersToAirport("прилетели", bus.PassengersUids);
                 bus.PassengersUids?.Clear();
                 bus.ChangeState(BusState.GoingToGarageFromAirport);
 
