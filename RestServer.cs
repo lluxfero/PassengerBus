@@ -327,7 +327,6 @@ namespace PassengerBus
             if (ifGettingPassengers)
             {
                 bus.ChangeState(BusState.DroppingPassengersToAirport);
-
                 // запрос к самолету по uid: какой номер рейса?
                 //HttpResponseMessage voyageResponse = await client.GetVoyageUidAsync(bus);
                 //statusCode = (int)voyageResponse.StatusCode;
