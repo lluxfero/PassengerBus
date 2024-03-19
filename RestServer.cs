@@ -176,7 +176,7 @@ namespace PassengerBus
                 JsonElement root = JsonDocument.Parse(content).RootElement;
                 load = root.GetProperty("load").GetBoolean();
                 JsonElement passengers = root.GetProperty("passengers");
-                passengersUids = JsonSerializer.Deserialize<List<string>>(passengers) ?? [];
+                passengersUids = JsonSerializer.Deserialize<List<string>>(passengers.GetRawText()) ?? [];
             }
             lock (lockerDictionary)
             {
