@@ -29,10 +29,10 @@ namespace PassengerBus
             client.BaseAddress = new Uri(BoardAddress);
 
             HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-            try { response = await client.GetAsync($"/v1/{bus.boardUid}/passengers"); }
+            try { response = await client.GetAsync($"/v1/airplanes/{bus.boardUid}/passengers"); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | GET /v1/{bus.boardUid}/passengers | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | GET /v1/airplanes/{bus.boardUid}/passengers | {response.StatusCode}");
             return response;
         }
 
@@ -123,10 +123,10 @@ namespace PassengerBus
             StringContent content = new StringContent("");
 
             HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-            try { response = await client.PostAsync($"/v1/map/at/{X}/{Y}/{action}", content); }
+            try { response = await client.PostAsync($"/v1/map/at/{Y}/{X}/{action}", content); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/at/{X}/{Y}/{action} | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/at/{Y}/{X}/{action} | {response.StatusCode}");
 
             return response;
         }
@@ -142,10 +142,10 @@ namespace PassengerBus
             int oldY = bus.Y;
 
             HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-            try { response = await client.PostAsync($"/v1/map/move/{oldX}/{oldY}/{newX}/{newY}", content); }
+            try { response = await client.PostAsync($"/v1/map/move/{oldY}/{oldX}/{newY}/{newX}", content); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/move/{oldX}/{oldY}/{newX}/{newY} | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/move/{oldY}/{oldX}/{newY}/{newX} | {response.StatusCode}");
 
             return response;
         }

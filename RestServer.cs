@@ -168,9 +168,16 @@ namespace PassengerBus
 
             // получаем список пассажиров: пустой - едем к аэропорту, НЕ пустой - едем к самолету
             PassengerBus bus;
+            bool load = true; // true - принимаю пассажиров, false - отдаю пассажиров
             List<string> passengersUids = [];
             string content = await boardResponse.Content.ReadAsStringAsync();
-            if (content != null && content != "") passengersUids = JsonSerializer.Deserialize<List<string>>(content);
+            if (content != null && content != "")
+            {
+                JsonElement root = JsonDocument.Parse(content).RootElement;
+                load = root.GetProperty("load").GetBoolean();
+                JsonElement passengers = root.GetProperty("passengers");
+                passengersUids = JsonSerializer.Deserialize<List<string>>(passengers) ?? [];
+            }
             lock (lockerDictionary)
             {
                 if (!buses.TryGetValue(busUid, out PassengerBus? value)) {
@@ -180,6 +187,7 @@ namespace PassengerBus
                 }
                 bus = value;
             }
+            if (load == true && passengersUids.Count == 0) bus.ChangeState(BusState.StopPosition);
             if (passengersUids == null || passengersUids.Count == 0) bus.ChangeState(BusState.GoingToAirportForPassengers);
             else bus.ChangeState(BusState.GoingToParkingForPassengers);
 
@@ -205,7 +213,7 @@ namespace PassengerBus
                 statusCode = (int)voyageResponse.StatusCode;
                 while (statusCode != 200)
                 {
-                    voyageResponse = await client.GetIfTherePassengersAsync(bus);
+                    voyageResponse = await client.GetVoyageUidAsync(bus);
                     statusCode = (int)voyageResponse.StatusCode;
                 }
                 content = await voyageResponse.Content.ReadAsStringAsync();
@@ -325,7 +333,7 @@ namespace PassengerBus
                 statusCode = (int)voyageResponse.StatusCode;
                 while (statusCode != 200)
                 {
-                    voyageResponse = await client.GetIfTherePassengersAsync(bus);
+                    voyageResponse = await client.GetVoyageUidAsync(bus);
                     statusCode = (int)voyageResponse.StatusCode;
                 }
                 jsonContent = await voyageResponse.Content.ReadAsStringAsync();
@@ -375,6 +383,9 @@ namespace PassengerBus
                     content = await controlResponse.Content.ReadAsStringAsync();
                     success = JsonDocument.Parse(content).RootElement.GetProperty("success").GetBoolean();
                 }
+
+                bus.X = X[i];
+                bus.Y = Y[i];
             }
         }
     }
