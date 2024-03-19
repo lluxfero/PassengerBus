@@ -148,8 +148,7 @@ namespace PassengerBus
             }
             // ответ на запрос go_parking
             response.StatusCode = 200; // статус код
-            string json = JsonSerializer.Serialize(new { busUid }); // контент ответа
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(json);
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(busUid); // контент ответа (просто строка)
             response.ContentLength64 = buffer.Length;
             response.ContentEncoding = System.Text.Encoding.UTF8;
             System.IO.Stream output = response.OutputStream; // запишем контент ответа
@@ -183,6 +182,15 @@ namespace PassengerBus
             }
             if (passengersUids == null || passengersUids.Count == 0) bus.ChangeState(BusState.GoingToAirportForPassengers);
             else bus.ChangeState(BusState.GoingToParkingForPassengers);
+
+            // запрос к диспетчеру: заспавнить машинку
+            HttpResponseMessage controlResponse = await client.PostMapAtRowColumnStatus(bus, bus.X, bus.Y, "1");
+            statusCode = (int)controlResponse.StatusCode;
+            while (statusCode != 200)
+            {
+                controlResponse = await client.PostMapAtRowColumnStatus(bus, bus.X, bus.Y, "1");
+                statusCode = (int)controlResponse.StatusCode;
+            }
 
             // едем по маршруту за пассажирами: либо до аэропорта, либо до самолета 
             await GoRoute(bus, bus.GetRouteX(), bus.GetRouteY());
@@ -328,6 +336,15 @@ namespace PassengerBus
                 bus.ChangeState(BusState.GoingToGarageFromAirport);
 
                 await GoRoute(bus, bus.GetRouteX(), bus.GetRouteY());
+            }
+
+            // запрос к диспетчеру: убрать машинку
+            HttpResponseMessage controlResponse = await client.PostMapAtRowColumnStatus(bus, 20, 10, "0");
+            statusCode = (int)controlResponse.StatusCode;
+            while (statusCode != 200)
+            {
+                controlResponse = await client.PostMapAtRowColumnStatus(bus, 20, 10, "0");
+                statusCode = (int)controlResponse.StatusCode;
             }
 
             // машинка закончила свою работу

@@ -114,6 +114,23 @@ namespace PassengerBus
             return response;
         }
 
+        // запрос к Диспетчеру: заспавнить машинку на карте
+        public async Task<HttpResponseMessage> PostMapAtRowColumnStatus(PassengerBus bus, int X, int Y, string action)
+        {
+            using var client = new HttpClient();
+            client.BaseAddress = new Uri(ControlAddress);
+
+            StringContent content = new StringContent("");
+
+            HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
+            try { response = await client.PostAsync($"/v1/map/at/{X}/{Y}/{action}", content); }
+            catch (Exception) { }
+
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/at/{X}/{Y}/{action} | {response.StatusCode}");
+
+            return response;
+        }
+
         // запрос к Диспетчеру: переместить машинку на карте
         public async Task<HttpResponseMessage> PostMapMoveAsync(PassengerBus bus, int newX, int newY)
         {
@@ -128,7 +145,7 @@ namespace PassengerBus
             try { response = await client.PostAsync($"/v1/map/move/{oldX}/{oldY}/{newX}/{newY}", content); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to UNO | POST /v1/map/move/{oldX}/{oldY}/{newX}/{newY} | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/move/{oldX}/{oldY}/{newX}/{newY} | {response.StatusCode}");
 
             return response;
         }
