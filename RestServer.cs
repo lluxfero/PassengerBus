@@ -7,10 +7,22 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace PassengerBus
 {
+    public class CartItem
+    {
+        public string type { get; set; }
+        public CartPosition position { get; set; }
+    }
+    public class CartPosition
+    {
+        public string row { get; set; }
+        public string column { get; set; }
+    }
+
     public class RestServer
     {
         // базовый адрес сервера
@@ -59,7 +71,6 @@ namespace PassengerBus
                     var request = context.Request;      // объект запроса
                     var response = context.Response;    // объект ответа
 
-                    logger.Log($"{DateTime.Now:HH:mm:ss.fff} | получен запрос: {request.HttpMethod} {request.Url}");
                     if (request.Url == null) continue;
 
                     switch (request.HttpMethod)
@@ -68,6 +79,7 @@ namespace PassengerBus
                             RespondToGetMethod(request, response);
                             break;
                         case "POST":
+                            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | получен запрос: {request.HttpMethod} {request.Url}");
                             RespondToPostMethod(request, response);
                             break;
                         // если другой метод, то возвращаем код ошибки 405 (Method Not Allowed)
@@ -107,8 +119,16 @@ namespace PassengerBus
             {
                 case "go_parking/": // запрос от УНО: выезжай к новому самолету
                     {
+                        logger.Log($"{DateTime.Now:HH:mm:ss.fff} | получен запрос: {request.HttpMethod} {request.Url}");
                         ThreadPool.QueueUserWorkItem(async _ => {
                             await GetGoParking(response, segments);
+                        });
+                        break;
+                    }
+                case "visuals":
+                    {
+                        ThreadPool.QueueUserWorkItem(async _ => {
+                            await GetVisuals(response);
                         });
                         break;
                     }
@@ -120,6 +140,34 @@ namespace PassengerBus
                     }
             }
         }
+
+        public async Task GetVisuals(HttpListenerResponse response)
+        {
+            var items = new List<CartItem>();
+
+            lock (lockerDictionary)
+            {
+                foreach (var b in buses)
+                {
+                    var position = new CartPosition() { row = b.Value.X.ToString(), column = b.Value.Y.ToString() };
+                    var item = new CartItem() { type = "cart", position = position };
+                    items.Add(item);
+                }
+            }
+            string json = JsonSerializer.Serialize(items);
+
+            response.StatusCode = 200; // статус код
+            response.Headers.Add("Access-Control-Allow-Origin", "*");
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(json); // контент ответа
+            response.ContentLength64 = buffer.Length;
+            response.ContentEncoding = System.Text.Encoding.UTF8;
+            System.IO.Stream output = response.OutputStream; // запишем контент ответа
+            await output.WriteAsync(buffer);
+            await output.FlushAsync();
+            output.Close();
+            response.Close(); // закрываем ответ
+        }
+
         public async Task GetGoParking(HttpListenerResponse response, string[] segments)
         {
             if (segments.Length >= 4 && segments[3] != null) { } // uid борта
@@ -162,6 +210,7 @@ namespace PassengerBus
             int statusCode = (int)boardResponse.StatusCode;
             while (statusCode != 200)
             {
+                Thread.Sleep(1000);
                 boardResponse = await client.GetIfTherePassengersAsync(newBus);
                 statusCode = (int)boardResponse.StatusCode;
             }
@@ -196,6 +245,7 @@ namespace PassengerBus
             statusCode = (int)controlResponse.StatusCode;
             while (statusCode != 200)
             {
+                Thread.Sleep(1000);
                 controlResponse = await client.PostMapAtRowColumnStatus(bus, bus.X, bus.Y, "1");
                 statusCode = (int)controlResponse.StatusCode;
             }
@@ -213,6 +263,7 @@ namespace PassengerBus
                 statusCode = (int)voyageResponse.StatusCode;
                 while (statusCode != 200)
                 {
+                    Thread.Sleep(1000);
                     voyageResponse = await client.GetVoyageUidAsync(bus);
                     statusCode = (int)voyageResponse.StatusCode;
                 }
@@ -234,6 +285,7 @@ namespace PassengerBus
             statusCode = (int)unoResponse.StatusCode;
             while (statusCode != 200)
             {
+                Thread.Sleep(1000);
                 unoResponse = await client.PostCarHereAsync(bus); ;
                 statusCode = (int)unoResponse.StatusCode;
             }
@@ -298,6 +350,7 @@ namespace PassengerBus
             int statusCode = (int)boardResponse.StatusCode;
             while (statusCode != 200)
             {
+                Thread.Sleep(1000);
                 boardResponse = await client.PostPassengersAsync(ifGettingPassengers, bus);
                 statusCode = (int)boardResponse.StatusCode;
             }
@@ -307,8 +360,9 @@ namespace PassengerBus
             if (!ifGettingPassengers) bus.PassengersUids?.Clear();
             else if (jsonContent != null && jsonContent != "")
             {
-                bus.PassengersUids = JsonSerializer.Deserialize<List<string>>(jsonContent) ?? [];
-                logger.LogPassengers(false, DateTime.Now.ToString("HH:mm:ss.fff"), bus.voyageUid, bus.PassengersUids);
+                JsonElement root = JsonDocument.Parse(jsonContent).RootElement;
+                JsonElement passengers = root.GetProperty("passengers");
+                bus.PassengersUids = JsonSerializer.Deserialize<List<string>>(passengers.GetRawText()) ?? [];
             }
 
             // ответ на запрос do_action
@@ -350,6 +404,7 @@ namespace PassengerBus
             statusCode = (int)controlResponse.StatusCode;
             while (statusCode != 200)
             {
+                Thread.Sleep(1000);
                 controlResponse = await client.PostMapAtRowColumnStatus(bus, 20, 10, "0");
                 statusCode = (int)controlResponse.StatusCode;
             }
@@ -377,6 +432,7 @@ namespace PassengerBus
                 bool success = JsonDocument.Parse(content).RootElement.GetProperty("success").GetBoolean();
                 while (statusCode != 200 && success != true)
                 {
+                    Thread.Sleep(1000);
                     controlResponse = await client.PostMapMoveAsync(bus, X[i], Y[i]);
                     statusCode = (int)controlResponse.StatusCode;
                     content = await controlResponse.Content.ReadAsStringAsync();
@@ -385,6 +441,8 @@ namespace PassengerBus
 
                 bus.X = X[i];
                 bus.Y = Y[i];
+
+                Thread.Sleep(300);
             }
         }
     }

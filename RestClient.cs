@@ -46,7 +46,7 @@ namespace PassengerBus
             try { response = await client.GetAsync($"/v1/{bus.boardUid}/voyage/uid"); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | GET /v1/{bus.boardUid}/voyage/uid | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | GET /v1/airplanes/{bus.boardUid}/voyage/uid | {response.StatusCode}");
             return response;
         }
 
@@ -61,10 +61,10 @@ namespace PassengerBus
                 StringContent content = new StringContent("");
 
                 HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-                try { response = await client.PostAsync($"/v1/{bus.boardUid}/passengers/unload", content); }
+                try { response = await client.PostAsync($"/v1/airplanes/{bus.boardUid}/passengers/unload", content); }
                 catch (Exception) { }
 
-                logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | POST /v1/{bus.boardUid}/passengers/unload | {response.StatusCode}");
+                logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to board | POST /v1/airplanes/{bus.boardUid}/passengers/unload | {response.StatusCode}");
                 return response;
             }
             else
@@ -73,11 +73,11 @@ namespace PassengerBus
                 StringContent jsonContent = new StringContent(json, System.Text.Encoding.UTF8);
 
                 HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-                try { response = await client.PostAsync($"/v1/{bus.boardUid}/passengers", jsonContent); }
+                try { response = await client.PostAsync($"/v1/airplanes/{bus.boardUid}/passengers", jsonContent); }
                 catch (Exception) { }
 
                 string time = DateTime.Now.ToString("HH:mm:ss.fff");
-                logger.Log($"{time} | bus #{bus.busUid} | to board | POST /v1/{bus.boardUid}/passengers | {response.StatusCode}\n{json}");
+                logger.Log($"{time} | bus #{bus.busUid} | to board | POST /v1/airplanes/{bus.boardUid}/passengers | {response.StatusCode}\n{json}");
                 return response;
             }
         }
@@ -123,10 +123,10 @@ namespace PassengerBus
             StringContent content = new StringContent("");
 
             HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-            try { response = await client.PostAsync($"/v1/map/at/{Y}/{X}/{action}", content); }
+            try { response = await client.PostAsync($"/v1/map/at/{X}/{Y}/{action}", content); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/at/{Y}/{X}/{action} | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/at/{X}/{Y}/{action} | {response.StatusCode}");
 
             return response;
         }
@@ -142,10 +142,10 @@ namespace PassengerBus
             int oldY = bus.Y;
 
             HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-            try { response = await client.PostAsync($"/v1/map/move/{oldY}/{oldX}/{newY}/{newX}", content); }
+            try { response = await client.PostAsync($"/v1/map/move/{oldX}/{oldY}/{newX}/{newY}", content); }
             catch (Exception) { }
 
-            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/move/{oldY}/{oldX}/{newY}/{newX} | {response.StatusCode}");
+            logger.Log($"{DateTime.Now:HH:mm:ss.fff} | bus #{bus.busUid} | to Control | POST /v1/map/move/{oldX}/{oldY}/{newX}/{newY} | {response.StatusCode}");
 
             return response;
         }
