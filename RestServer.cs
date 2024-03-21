@@ -236,8 +236,8 @@ namespace PassengerBus
                 }
                 bus = value;
             }
-            if (load == true && passengersUids.Count == 0) bus.ChangeState(BusState.StopPosition);
-            if (passengersUids == null || passengersUids.Count == 0) bus.ChangeState(BusState.GoingToAirportForPassengers);
+            if (load == false) bus.ChangeState(BusState.GoingToAirportForPassengers);
+            else if (load == true && passengersUids.Count == 0) bus.ChangeState(BusState.StopPosition);
             else bus.ChangeState(BusState.GoingToParkingForPassengers);
 
             // запрос к диспетчеру: заспавнить машинку
@@ -364,11 +364,11 @@ namespace PassengerBus
                 JsonElement passengers = root.GetProperty("passengers");
                 bus.PassengersUids = JsonSerializer.Deserialize<List<string>>(passengers.GetRawText()) ?? [];
             }
+            else bus.PassengersUids = [];
 
             // ответ на запрос do_action
             response.StatusCode = 200;
             response.Close();
-
 
             // говорим УНО: сделали работу (даже если вернулось 400 - ок)
             HttpResponseMessage unoResponse = await client.PostCarDoneAsync(bus);
@@ -392,7 +392,7 @@ namespace PassengerBus
                 //jsonContent = await voyageResponse.Content.ReadAsStringAsync();
                 //bus.voyageUid = JsonDocument.Parse(jsonContent).RootElement.GetProperty("uid").ToString();
 
-                if (bus.PassengersUids != null) rabbitMqManager.PutPassengersToAirport("прилетели", bus.PassengersUids);
+                if (bus.PassengersUids != null) rabbitMqManager.PutPassengersToAirport("прилет", bus.PassengersUids);
                 bus.PassengersUids?.Clear();
                 bus.ChangeState(BusState.GoingToGarageFromAirport);
 

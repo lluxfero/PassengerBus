@@ -38,7 +38,7 @@ namespace PassengerBus
 
             lock (lockerPassangers)
             {
-                using var writer = File.AppendText(LogCommonFileName);
+                using var writer = File.AppendText(LogPassangersFileName);
                 writer.WriteLine(str);
                 Console.WriteLine(str);
             }
