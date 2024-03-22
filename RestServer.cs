@@ -14,7 +14,13 @@ namespace PassengerBus
 {
     public class FlightInfo
     {
+        public bool success { get; set; } = true;
         public bool load { get; set; } = true;
+        public List<string> passengers { get; set; } = [];
+    }
+    public class PassengersInfo
+    {
+        public bool success { get; set; } = true;
         public List<string> passengers { get; set; } = [];
     }
 
@@ -225,6 +231,7 @@ namespace PassengerBus
             PassengerBus bus;
             FlightInfo flightInfo = new()
             {
+                success = true,
                 load = true, // true - принимаю пассажиров, false - отдаю пассажиров
                 passengers = []
             };
@@ -377,14 +384,16 @@ namespace PassengerBus
             }
 
             // контент ответа борта: с пассажирами или пустой
+            PassengersInfo passangersInfo = new()
+            {
+                success = true,
+                passengers = []
+            };
             string jsonContent = await boardResponse.Content.ReadAsStringAsync();
             if (!ifGettingPassengers) bus.PassengersUids?.Clear();
             else if (jsonContent != null && jsonContent != "")
-            {
-                JsonElement root = JsonDocument.Parse(jsonContent).RootElement;
-                JsonElement passengers = root.GetProperty("passengers");
-                bus.PassengersUids = JsonSerializer.Deserialize<List<string>>(passengers.GetRawText()) ?? [];
-            }
+                if (JsonSerializer.Deserialize<PassengersInfo>(jsonContent) != null) 
+                    passangersInfo = JsonSerializer.Deserialize<PassengersInfo>(jsonContent);
             else bus.PassengersUids = [];
 
             // ответ на запрос do_action
