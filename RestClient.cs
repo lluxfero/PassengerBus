@@ -73,11 +73,11 @@ namespace PassengerBus
                 StringContent jsonContent = new StringContent(json, System.Text.Encoding.UTF8);
 
                 HttpResponseMessage response = new(System.Net.HttpStatusCode.BadRequest);
-                try { response = await client.PostAsync($"/v1/airplanes/{bus.boardUid}/passengers", jsonContent); }
+                try { response = await client.PostAsync($"/v1/airplanes/{bus.boardUid}/passengers/load", jsonContent); }
                 catch (Exception) { }
 
                 string time = DateTime.Now.ToString("HH:mm:ss.fff");
-                logger.Log($"{time} | bus #{bus.busUid} | to board | POST /v1/airplanes/{bus.boardUid}/passengers | {response.StatusCode}\n{json}");
+                logger.Log($"{time} | bus #{bus.busUid} | to board | POST /v1/airplanes/{bus.boardUid}/passengers/load | {response.StatusCode}\n{json}");
                 return response;
             }
         }
