@@ -12,6 +12,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PassengerBus
 {
+    public class FlightInfo
+    {
+        public bool load { get; set; } = true;
+        public List<string> passengers { get; set; } = [];
+    }
+
     public class CartItem
     {
         public string type { get; set; }
@@ -217,16 +223,15 @@ namespace PassengerBus
 
             // получаем список пассажиров: пустой - едем к аэропорту, НЕ пустой - едем к самолету
             PassengerBus bus;
-            bool load = true; // true - принимаю пассажиров, false - отдаю пассажиров
-            List<string> passengersUids = [];
+            FlightInfo flightInfo = new()
+            {
+                load = true, // true - принимаю пассажиров, false - отдаю пассажиров
+                passengers = []
+            };
             string content = await boardResponse.Content.ReadAsStringAsync();
             if (content != null && content != "")
-            {
-                JsonElement root = JsonDocument.Parse(content).RootElement;
-                load = root.GetProperty("load").GetBoolean();
-                JsonElement passengers = root.GetProperty("passengers");
-                passengersUids = JsonSerializer.Deserialize<List<string>>(passengers.GetRawText()) ?? [];
-            }
+                if (JsonSerializer.Deserialize<FlightInfo>(content) != null)
+                    flightInfo = JsonSerializer.Deserialize<FlightInfo>(content);
             lock (lockerDictionary)
             {
                 if (!buses.TryGetValue(busUid, out PassengerBus? value)) {
@@ -236,8 +241,24 @@ namespace PassengerBus
                 }
                 bus = value;
             }
-            if (load == false) bus.ChangeState(BusState.GoingToAirportForPassengers);
-            else if (load == true && passengersUids.Count == 0) bus.ChangeState(BusState.StopPosition);
+            if (flightInfo.load == false) bus.ChangeState(BusState.GoingToAirportForPassengers);
+            else if (flightInfo.load == true && flightInfo.passengers.Count == 0)
+            {
+                bus.ChangeState(BusState.StopPosition);
+                lock (lockerDictionary)
+                {
+                    if (!buses.ContainsKey(bus.busUid))
+                    {
+                        response.StatusCode = 400;
+                        response.Close(); // закрываем ответ
+                        return;
+                    }
+                    buses.Remove(bus.busUid);
+                }
+                response.StatusCode = 200;
+                response.Close(); // закрываем ответ
+                return;
+            }
             else bus.ChangeState(BusState.GoingToParkingForPassengers);
 
             // запрос к диспетчеру: заспавнить машинку
